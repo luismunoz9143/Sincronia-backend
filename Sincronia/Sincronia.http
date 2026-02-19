@@ -1,0 +1,6 @@
+@Sincronia_HostAddress = http://localhost:5222
+
+GET {{Sincronia_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

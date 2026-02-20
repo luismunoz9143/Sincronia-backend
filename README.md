@@ -1,68 +1,261 @@
-﻿# ♾️ Sincronía | AI Productivity Assistant
+﻿# Sincronía - Backend API Server
 
-Sincronía es una aplicación web impulsada por Inteligencia Artificial diseñada para mentes creativas y profesionales ocupados. El sistema sincroniza la preparación de alimentos con las tareas diarias, optimizando los tiempos muertos (como el tiempo de cocción) para generar bloques de "enfoque profundo" (Deep Work) sin sacrificar la nutrición ni la seguridad.
+## 1. Descripción General del Sistema
 
-## 🚀 Arquitectura del Proyecto
+Sincronía es una plataforma orientada a la optimización de la
+productividad y la gestión del tiempo.\
+El núcleo del sistema (Backend) opera como una API RESTful desarrollada
+en **.NET 8 (C#)**.
 
-El proyecto está dividido en dos capas principales:
+Su función principal es actuar como un orquestador lógico que procesa
+las preferencias de los usuarios (restricciones dietéticas, tiempos
+máximos de preparación y carga de tareas) y delega el razonamiento
+complejo a un modelo de Inteligencia Artificial externo.
 
-* **Frontend (Cliente):** Interfaz de usuario limpia y minimalista, desarrollada con Vanilla JavaScript, HTML5 y CSS3 moderno (CSS Variables, Flexbox/Grid). Utiliza `Chart.js` para la visualización de datos y `Phosphor Icons` para la iconografía.
-* **Backend (Servidor):** API RESTful desarrollada en **C# .NET**. Se encarga de la lógica de negocio y la orquestación de servicios externos.
-* **Motor de IA:** Integración con la API de **Groq** (modelo `llama-3.1-8b-instant`) para el procesamiento de lenguaje natural y la generación de rutinas de productividad estructuradas y seguras.
+El resultado es la generación de un "Plan Maestro de Trabajo" que
+intercala eficientemente periodos de cocción con bloques de enfoque
+profundo (Deep Work), garantizando la seguridad del contexto operativo.
 
-## ✨ Características Principales
+------------------------------------------------------------------------
 
-1.  **Nutrición Adaptativa:** Sugerencias basadas en preferencias alimenticias (Balanceada, Keto, Vegetariana) y el tiempo disponible.
-2.  **Motor de Inteligencia:** Generación de un "Plan Maestro de Trabajo" que analiza las tareas pendientes y las distribuye lógicamente a lo largo del día.
-3.  **Seguridad de Contexto:** Reglas estrictas de Prompt Engineering que evitan sugerencias peligrosas (ej. salir de casa mientras la estufa está encendida).
-4.  **Dashboard Interactivo:** Visualización en tiempo real de la distribución del tiempo (Cocina vs. Enfoque) mediante gráficos.
+## 2. Arquitectura del Proyecto
 
-## 🛠️ Requisitos Previos
+El sistema está diseñado bajo el patrón **Controlador-Servicio (N-Tier
+Architecture)**, priorizando el principio de responsabilidad única (SRP)
+y facilitando el bajo acoplamiento.
 
-Para ejecutar este proyecto de manera local, necesitas:
-* [.NET SDK 8.0 o superior](https://dotnet.microsoft.com/download)
-* Un navegador web moderno.
-* Una API Key de **Groq** (Gratuita).
+### Componentes:
 
-## ⚙️ Instalación y Configuración
+-   **Capa de Presentación (Controllers):**\
+    Expone los endpoints HTTP. Valida datos mediante Data Annotations y
+    retorna respuestas HTTP estándar.
 
-### 1. Configuración del Backend (.NET)
-Navega a la carpeta del backend y configura tu clave de IA:
+-   **Capa de Lógica de Negocio (Services):**\
+    Contiene reglas de negocio e integración con la API de Inteligencia
+    Artificial.
 
-1. Abre el archivo `appsettings.json`.
-2. Agrega tu clave de Groq en la sección correspondiente:
-   ```json
-   {
-     "Logging": {
-       "LogLevel": {
-         "Default": "Information",
-         "Microsoft.AspNetCore": "Warning"
-       }
-     },
-     "AllowedHosts": "*",
-     "Groq": {
-       "ApiKey": "TU_API_KEY_AQUI"
-     }
-   }
-Ejecuta el proyecto. La API se levantará por defecto en el puerto 5222 (o el configurado en tu launchSettings.json).
+-   **Inyección de Dependencias (DI):**\
+    Uso del contenedor IoC nativo de .NET. Servicios como
+    `IPlannerService` y `HttpClient` son inyectados vía constructor.
 
-Bash
+-   **Flujo Interno:**\
+    Frontend → Middleware (CORS) → PlannerController → Validación DTO →
+    PlannerService → Groq API → Respuesta JSON.
+
+------------------------------------------------------------------------
+
+## 3. Estructura de Carpetas
+
+    /Sincronia.Api
+    │
+    ├── /Controllers
+    │   └── PlannerController.cs
+    │
+    ├── /Services
+    │   ├── IPlannerService.cs
+    │   └── PlannerService.cs
+    │
+    ├── /Models
+    │   ├── PlannerRequestDto.cs
+    │   └── PlannerResponseDto.cs
+    │
+    ├── appsettings.json
+    ├── launchSettings.json
+    └── Program.cs
+
+------------------------------------------------------------------------
+
+## 4. Configuración y Ejecución
+
+### Requisitos Previos
+
+-   SDK de .NET 8.0 o superior
+-   Clave válida para la API de Groq
+
+### Configuración (appsettings.json)
+
+``` json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Groq": {
+    "ApiKey": "INSERTE_SU_API_KEY_AQUI",
+    "Model": "llama-3.1-8b-instant"
+  }
+}
+```
+
+### Puerto de Ejecución
+
+Definido en `Properties/launchSettings.json`.
+
+Por defecto:
+
+    http://localhost:5222
+
+Para modificarlo, editar `applicationUrl`.
+
+### Ejecutar desde CLI
+
+``` bash
 dotnet run
-2. Configuración del Frontend
-Asegúrate de que la API de .NET esté corriendo.
+```
 
-Abre el archivo Sincronia.Front/script.js y verifica que la constante API_URL apunte al puerto correcto de tu entorno local (ej. http://localhost:5222/api/planner/organize-day).
+------------------------------------------------------------------------
 
-Abre el archivo index.html en tu navegador (puedes usar la extensión Live Server de VS Code para una mejor experiencia).
+## 5. Referencia de la API
 
-💻 Uso de la Aplicación
-Inicia sesión para acceder al Dashboard.
+### Endpoint: Generar Plan de Sincronía
 
-En el panel izquierdo, selecciona tu preferencia de dieta y ajusta el tiempo máximo que deseas pasar cocinando usando el slider.
+-   **Ruta:** `/api/planner/organize-day`
+-   **Método:** POST
+-   **Content-Type:** application/json
 
-Escribe tus tareas del día, una por línea.
+### Request Body
 
-Haz clic en Sincronizar D'IA. El sistema consultará al modelo de lenguaje y estructurará tu rutina diaria en el panel derecho.
+``` json
+{
+  "dietPreference": "Balanceada",
+  "maxCookingTimeMinutes": 45,
+  "tasks": [
+    "Revisar correos electrónicos",
+    "Redactar informe financiero",
+    "Reunión de avance de proyecto"
+  ]
+}
+```
 
-👨‍💻 Autores
-[Tu Nombre Completo] - Desarrollo Full-Stack y Prompt Engineering - Proyecto Final.
+### Response Body
+
+``` json
+{
+  "success": true,
+  "data": {
+    "routine": [
+      {
+        "time": "08:00",
+        "activity": "Cocina: Preparación de Desayuno Balanceado",
+        "category": "Food"
+      },
+      {
+        "time": "08:45",
+        "activity": "Bloque Deep Work: Redactar informe financiero",
+        "category": "Work"
+      }
+    ],
+    "summary": "Plan optimizado. El tiempo de cocción inactiva se aprovechará para revisión de correos."
+  },
+  "message": "Plan generado exitosamente."
+}
+```
+
+### Códigos de Estado
+
+-   200 OK → Plan generado correctamente
+-   400 Bad Request → Error de validación
+-   500 Internal Server Error → Fallo en IA o excepción no controlada
+
+------------------------------------------------------------------------
+
+## 6. Integración Externa y Motor de IA
+
+El backend utiliza la API de Groq con el modelo `llama-3.1-8b-instant`.
+
+### Justificación Técnica
+
+Groq emplea arquitectura LPU (Language Processing Units), ofreciendo
+menor latencia de inferencia comparado con GPU tradicionales.
+
+Esto permite respuesta síncrona en tiempo real.
+
+### Prompt Engineering
+
+Se utilizan System Prompts restrictivos para:
+
+-   Forzar formato estructurado
+-   Mantener consistencia JSON
+-   Aplicar reglas de seguridad (evitar riesgos físicos durante cocción)
+
+------------------------------------------------------------------------
+
+## 7. Seguridad y Buenas Prácticas
+
+### Gestión de Credenciales
+
+-   No subir claves reales al repositorio
+-   Uso de `.gitignore`
+
+### Variables de Entorno
+
+Recomendado:
+
+    dotnet user-secrets
+
+O variables de entorno:
+
+    GROQ__APIKEY
+
+### Políticas CORS
+
+Configuradas en `Program.cs` permitiendo únicamente orígenes
+autorizados.
+
+------------------------------------------------------------------------
+
+## 8. Escalabilidad y Roadmap Técnico
+
+-   Autenticación con OAuth 2.0 / JWT (ASP.NET Core Identity)
+-   Persistencia con Entity Framework Core + PostgreSQL o SQL Server
+-   Logging estructurado con Serilog + OpenTelemetry
+-   Contenerización con Docker y despliegue en Kubernetes o Azure App
+    Services
+
+------------------------------------------------------------------------
+
+## 9. Trabajo Colaborativo y Gestión del Proyecto
+
+El desarrollo de Sincronía fue realizado bajo un enfoque colaborativo por un equipo de tres integrantes, aplicando principios de organización ágil y gestión visual del flujo de trabajo.
+
+### Equipo de Desarrollo
+- Steven Maldonado
+- Maria Perez
+- Luis Muñoz
+
+### Metodología de Trabajo
+Se utilizó Trello como herramienta de gestión de tareas para:
+
+- Planificación de sprint académico
+- Asignación de responsabilidades
+- Seguimiento de avances
+- Control de entregables
+- Priorización de funcionalidades (MVP → mejoras)
+
+### Tablero Oficial del Proyecto
+https://trello.com/b/4Mw4xVMq/sincronia-ia
+
+El tablero documenta:
+- Backlog inicial
+- División Frontend / Backend
+- Integración con IA
+- Fases de pruebas
+- Preparación de entrega final
+
+Este enfoque permitió mantener trazabilidad, transparencia en responsabilidades y control del alcance del proyecto.
+
+------------------------------------------------------------------------
+
+## 10. Autores 
+* `Steven Maldonado`
+* `Maria Perez`
+* `Luis Muñoz`
+
+------------------------------------------------------------------------
+
+## 11. Licencia
+
+Proyecto académico con fines educativos.
